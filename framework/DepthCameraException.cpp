@@ -11,7 +11,7 @@ DepthCameraException::DepthCameraException(std::string description, XnStatus sta
 DepthCameraException::~DepthCameraException()
 {}
 
-const char* DepthCameraException::what() const
+const char* DepthCameraException::what() const noexcept
 {
 	return m_message.c_str();
 }
