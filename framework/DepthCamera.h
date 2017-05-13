@@ -13,7 +13,7 @@ public:
 	DepthCamera();
 	virtual ~DepthCamera();
 
-	static const XnMapOutputMode DepthCamera::OUTPUT_MODE;
+	static const XnMapOutputMode OUTPUT_MODE;
 
 	void getFrame(cv::Mat &bgrImage, cv::Mat &depthImage);
 	
