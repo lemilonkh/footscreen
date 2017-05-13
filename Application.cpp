@@ -176,7 +176,6 @@ void Application::loop()
 		std::set<XnUserID>& users = m_skeletonTracker->getTrackedUsers();
 		for (std::set<XnUserID>::iterator i = users.begin(); i != users.end(); ++i)
 			processSkeleton(*i);
-			std::cout << "enable processSkeleton!" << std::endl;
 	}
 
 	cv::imshow("bgr", m_bgrImage);

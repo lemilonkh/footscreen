@@ -5,7 +5,7 @@ BOOST_LIBS=boost_system boost_signals boost_thread
 BOOST_LDFLAGS=$(BOOST_LIBS:%=-l%$(BOOST_SUFFIX))
 
 CXXFLAGS+=$(shell pkg-config opencv --cflags) -I$(OPENNI_INCLUDE_PATH) -Wno-attributes
-LDFLAGS+=$(shell pkg-config opencv --libs) -lOpenNI $(BOOST_LDFLAGS) -lpthread
+LDFLAGS+=$(shell pkg-config opencv --libs) -lOpenNI $(BOOST_LDFLAGS)
 debug: CXXFLAGS += -g
 
 SRC_FILES=$(shell find . -iname "*.cpp")

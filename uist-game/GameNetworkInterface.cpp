@@ -19,8 +19,7 @@ GameNetworkInterface::~GameNetworkInterface()
 		delete *i;
 	}
 	m_messageHandlerMutex.unlock();
-	// TODO rework?
-	// m_messageHandlerMutex.destroy();
+	m_messageHandlerMutex.destroy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
