@@ -30,7 +30,10 @@ protected:
 	void calibrateCamera(const cv::Mat &bgrImage);
 
 	void computeHomography();
+
+	// own (team Y3t1z)
 	void logMatrices();
+	std::vector<cv::Point2f>* makeRect(width, height)
 
 	bool m_hasTerminated;
 

@@ -33,39 +33,46 @@ void Calibration::computeHomography()
 
 	// create target rect points (fullscreen)
 	int width = 1920, height = 1080;
-	std::vector<cv::Point2f> targetPoints(4);
-	targetPoints.push_back(cv::Point(0, 0));
-	targetPoints.push_back(cv::Point(0, height));
-	targetPoints.push_back(cv::Point(width, height));
-	targetPoints.push_back(cv::Point(width, 0));
+	std::vector<cv::Point2f>* targetPoints = makeRect(width, height);
 
-	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
+	// calculate homography matrix and its inverse
+	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, *targetPoints);
 	cv::invert(m_physicalToProjector, m_projectorToPhysical);
 
 	/// CALIBRATE CAMERA ///
 
 	// create kinect target rect points (VGA resolution in BGR camera)
 	int kinectWidth = 640, kinectHeight = 480;
-	std::vector<cv::Point2f> kinectTargetPoints(4);
-	kinectTargetPoints.push_back(cv::Point(0, 0));
-	kinectTargetPoints.push_back(cv::Point(0, kinectHeight));
-	kinectTargetPoints.push_back(cv::Point(kinectWidth, kinectHeight));
-	kinectTargetPoints.push_back(cv::Point(kinectWidth, 0));
+	std::vector<cv::Point2f>* kinectTargetPoints = makeRect(kinectWidth, kinectHeight);
 
-	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
+	// calculate homography matrix and its inverse
+	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, *kinectTargetPoints);
 	cv::invert(m_physicalToCamera, m_cameraToPhysical);
+
+	// clean up
+	delete targetPoints;
+	delete kinectTargetPoints;
 
 	// some nice logging
 	logMatrices();
 }
 
+std::vector<cv::Point2f>* Calibration::makeRect(width, height) {
+	std::vector<cv::Point2f> *points = new std::vector<cv::Point2f>(pointCount);
+	points->push_back(cv::Point2f(0, kinectHeight));
+	points->push_back(cv::Point2f(kinectWidth, kinectHeight));
+	points->push_back(cv::Point2f(kinectWidth, 0));
+	points->push_back(cv::Point2f(0, 0));
+	return points;
+}
+
 void Calibration::logMatrices() {
-	std::cout << "+------------------------+" << std::endl
-	          << "| Physical to projector: |" << m_physicalToProjector << std::endl
-						<< "| Projector to physical: |" << m_projectorToPhysical << std::endl
-						<< "| Physical to camera:    |" << m_physicalToCamera 	 << std::endl
-						<< "| Camera to physical:    |" << m_cameraToPhysical		 << std::endl
-	          << "+------------------------+" << std::endl;
+	std::cout << " +------------------------+ " << std::endl
+	          << " | Physical to projector: | " << m_physicalToProjector << std::endl
+						<< " | Projector to physical: | " << m_projectorToPhysical << std::endl
+						<< " | Physical to camera:    | " << m_physicalToCamera 	 << std::endl
+						<< " | Camera to physical:    | " << m_cameraToPhysical		 << std::endl
+	          << " +------------------------+ " << std::endl;
 }
 
 void mouseCallback(int event, int x, int y, int flags, void *pointer);
