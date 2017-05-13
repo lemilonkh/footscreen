@@ -30,6 +30,7 @@ protected:
 	void calibrateCamera(const cv::Mat &bgrImage);
 
 	void computeHomography();
+	void logMatrices();
 
 	bool m_hasTerminated;
 
@@ -57,4 +58,3 @@ protected:
 	cv::Mat m_physicalToCamera;
 	cv::Mat m_cameraToPhysical;
 };
-

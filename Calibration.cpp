@@ -44,6 +44,18 @@ void Calibration::computeHomography()
 	};
 	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
 	cv::invert(m_physicalToCamera, m_cameraToPhysical);
+
+	// some nice logging
+	logMatrices();
+}
+
+void Calibration::logMatrices() {
+	std::cout << "+------------------------+" << std::endl
+	          << "| Physical to projector: |" << m_physicalToProjector << std::endl
+						<< "| Projector to physical: |" << m_projectorToPhysical << std::endl
+						<< "| Physical to camera:    |" << m_physicalToCamera 	 << std::endl
+						<< "| Camera to physical:    |" << m_cameraToPhysical		 << std::endl
+	          << "+------------------------+" << std::endl;
 }
 
 void mouseCallback(int event, int x, int y, int flags, void *pointer);
