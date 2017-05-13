@@ -28,6 +28,22 @@ void Calibration::computeHomography()
 	// * m_cameraToPhysical
 	//
 	///////////////////////////////////////////////////////////////////////////
+
+	// calibrate projector
+	int width = 1920, height = 1080;
+	cv::Point2f targetPoints[4] = {
+		{0, 0}, {0, height}, {width, height}, {width,0}
+	};
+	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
+	cv::invert(m_physicalToProjector, m_projectorToPhysical);
+
+	// calibrate camera
+	int kinectWidth = 640, kinectHeight = 480;
+	cv::Point2f kinectTargetPoints[4] = {
+		{0, 0}, {0, kinectHeight}, {kinectWidth, kinectHeight}, {kinectWidth, 0}}
+	};
+	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
+	cv::invert(m_physicalToCamera, m_cameraToPhysical);
 }
 
 void mouseCallback(int event, int x, int y, int flags, void *pointer);
