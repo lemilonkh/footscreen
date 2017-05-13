@@ -33,36 +33,37 @@ void Calibration::computeHomography()
 
 	// create target rect points (fullscreen)
 	int width = 1920, height = 1080;
-	std::vector<cv::Point2f>* targetPoints = makeRect(width, height);
+	std::vector<cv::Point2f> targetPoints = makeRect(width, height);
 
 	// calculate homography matrix and its inverse
-	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, *targetPoints);
+	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
 	cv::invert(m_physicalToProjector, m_projectorToPhysical);
 
 	/// CALIBRATE CAMERA ///
 
 	// create kinect target rect points (VGA resolution in BGR camera)
 	int kinectWidth = 640, kinectHeight = 480;
-	std::vector<cv::Point2f>* kinectTargetPoints = makeRect(kinectWidth, kinectHeight);
+	std::vector<cv::Point2f> kinectTargetPoints = makeRect(kinectWidth, kinectHeight);
 
 	// calculate homography matrix and its inverse
-	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, *kinectTargetPoints);
+	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
 	cv::invert(m_physicalToCamera, m_cameraToPhysical);
-
-	// clean up
-	delete targetPoints;
-	delete kinectTargetPoints;
 
 	// some nice logging
 	logMatrices();
 }
 
-std::vector<cv::Point2f>* Calibration::makeRect(width, height) {
-	std::vector<cv::Point2f> *points = new std::vector<cv::Point2f>(pointCount);
-	points->push_back(cv::Point2f(0, kinectHeight));
-	points->push_back(cv::Point2f(kinectWidth, kinectHeight));
-	points->push_back(cv::Point2f(kinectWidth, 0));
-	points->push_back(cv::Point2f(0, 0));
+std::vector<cv::Point2f> Calibration::makeRect(int width, int height) {
+	std::vector<cv::Point2f> points(4);
+	points.push_back(cv::Point2f(0, height));
+	points.push_back(cv::Point2f(width, height));
+	points.push_back(cv::Point2f(width, 0));
+	points.push_back(cv::Point2f(0, 0));
+
+	// TODO remove logging
+	std::cout << "Make rect (w,h):  (" << width << "," << height << ")" << std::endl;
+	std::cout << "Make rect points: " << points << std::endl;
+
 	return points;
 }
 
