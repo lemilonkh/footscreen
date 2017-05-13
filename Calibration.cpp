@@ -29,19 +29,29 @@ void Calibration::computeHomography()
 	//
 	///////////////////////////////////////////////////////////////////////////
 
-	// calibrate projector
+	/// CALIBRATE PROJECTOR ///
+
+	// create target rect points (fullscreen)
 	int width = 1920, height = 1080;
-	cv::Point2f targetPoints[4] = {
-		{0, 0}, {0, height}, {width, height}, {width,0}
-	};
+	std::vector<cv::Point2f> targetPoints(4);
+	targetPoints.push_back(cv::Point(0, 0));
+	targetPoints.push_back(cv::Point(0, height));
+	targetPoints.push_back(cv::Point(width, height));
+	targetPoints.push_back(cv::Point(width, 0));
+
 	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
 	cv::invert(m_physicalToProjector, m_projectorToPhysical);
 
-	// calibrate camera
+	/// CALIBRATE CAMERA ///
+
+	// create kinect target rect points (VGA resolution in BGR camera)
 	int kinectWidth = 640, kinectHeight = 480;
-	cv::Point2f kinectTargetPoints[4] = {
-		{0, 0}, {0, kinectHeight}, {kinectWidth, kinectHeight}, {kinectWidth, 0}}
-	};
+	std::vector<cv::Point2f> kinectTargetPoints(4);
+	kinectTargetPoints.push_back(cv::Point(0, 0));
+	kinectTargetPoints.push_back(cv::Point(0, kinectHeight));
+	kinectTargetPoints.push_back(cv::Point(kinectWidth, kinectHeight));
+	kinectTargetPoints.push_back(cv::Point(kinectWidth, 0));
+
 	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
 	cv::invert(m_physicalToCamera, m_cameraToPhysical);
 
