@@ -33,7 +33,7 @@ protected:
 
 	// own (team Y3t1z)
 	void logMatrices();
-	std::vector<cv::Point2f> makeRect(int width, int height);
+	std::vector<cv::Point2f> makeRect(cv::Point2f topLeft, cv::Point2f bottomRight);
 
 	bool m_hasTerminated;
 

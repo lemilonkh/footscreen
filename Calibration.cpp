@@ -31,42 +31,40 @@ void Calibration::computeHomography()
 	/// CALIBRATE PROJECTOR ///
 
 	// create target rect points (fullscreen)
-	Point2f topLeft(200, 200);
-	Point2f bottomRight(400, 400); // TODO make bigger
+	cv::Point2f topLeft(200, 200);
+	cv::Point2f bottomRight(400, 400); // TODO make bigger
 	std::vector<cv::Point2f> targetPoints = makeRect(topLeft, bottomRight);
 
 	// calculate homography matrix and its inverse
-	//m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
-	m_physicalToProjector = cv::findHomography(m_projectorCoordinates, targetPoints);
+	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
 	cv::invert(m_physicalToProjector, m_projectorToPhysical);
 
 	/// CALIBRATE CAMERA ///
 
 	// create kinect target rect points (VGA resolution in BGR camera)
 	/*int kinectWidth = 640, kinectHeight = 480;
-	topLeft = Point2f(0, 0);
-	bottomRight = Point2f(kinectWidth, kinectHeight);
+	topLeft = cv::Point2f(0, 0);
+	bottomRight = cv::Point2f(kinectWidth, kinectHeight);
 	std::vector<cv::Point2f> kinectTargetPoints = makeRect(topLeft, bottomRight);*/
 
 	// calculate homography matrix and its inverse
-	//m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
-	m_physicalToCamera = cv::findHomography(m_cameraCoordinates, kinectTargetPoints);
+	// TODO use kinectTargetPoints ???
+	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, targetPoints);
 	cv::invert(m_physicalToCamera, m_cameraToPhysical);
 
 	// some nice logging
 	logMatrices();
 }
 
-std::vector<cv::Point2f> Calibration::makeRect(int width, int height) {
+std::vector<cv::Point2f> Calibration::makeRect(cv::Point2f topLeft, cv::Point2f bottomRight) {
 	std::vector<cv::Point2f> points(4);
-	points.push_back(cv::Point2f(0, height));
-	points.push_back(cv::Point2f(width, height));
-	points.push_back(cv::Point2f(width, 0));
-	points.push_back(cv::Point2f(0, 0));
+	points.push_back(cv::Point2f(topLeft.x, bottomRight.y));
+	points.push_back(bottomRight);
+	points.push_back(cv::Point2f(bottomRight.x, topLeft.y));
+	points.push_back(topLeft);
 
 	// TODO remove logging
-	std::cout << "Make rect (w,h):  (" << width << "," << height << ")" << std::endl;
-	std::cout << "Make rect points: " << points << std::endl;
+	std::cout << "Make rect: points = " << points << std::endl;
 
 	return points;
 }
