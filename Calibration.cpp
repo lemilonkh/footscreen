@@ -5,7 +5,6 @@
 
 #include <iostream>
 
-
 void Calibration::computeHomography()
 {
 	///////////////////////////////////////////////////////////////////////////
@@ -32,21 +31,26 @@ void Calibration::computeHomography()
 	/// CALIBRATE PROJECTOR ///
 
 	// create target rect points (fullscreen)
-	int width = 1920, height = 1080;
-	std::vector<cv::Point2f> targetPoints = makeRect(width, height);
+	Point2f topLeft(200, 200);
+	Point2f bottomRight(400, 400); // TODO make bigger
+	std::vector<cv::Point2f> targetPoints = makeRect(topLeft, bottomRight);
 
 	// calculate homography matrix and its inverse
-	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
+	//m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
+	m_physicalToProjector = cv::findHomography(m_projectorCoordinates, targetPoints);
 	cv::invert(m_physicalToProjector, m_projectorToPhysical);
 
 	/// CALIBRATE CAMERA ///
 
 	// create kinect target rect points (VGA resolution in BGR camera)
-	int kinectWidth = 640, kinectHeight = 480;
-	std::vector<cv::Point2f> kinectTargetPoints = makeRect(kinectWidth, kinectHeight);
+	/*int kinectWidth = 640, kinectHeight = 480;
+	topLeft = Point2f(0, 0);
+	bottomRight = Point2f(kinectWidth, kinectHeight);
+	std::vector<cv::Point2f> kinectTargetPoints = makeRect(topLeft, bottomRight);*/
 
 	// calculate homography matrix and its inverse
-	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
+	//m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, kinectTargetPoints);
+	m_physicalToCamera = cv::findHomography(m_cameraCoordinates, kinectTargetPoints);
 	cv::invert(m_physicalToCamera, m_cameraToPhysical);
 
 	// some nice logging
