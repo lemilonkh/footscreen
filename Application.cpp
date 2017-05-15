@@ -2,9 +2,12 @@
 //
 // Main class for HCI2 assignments
 // Authors:
+//		Milan Gruner (2017)
+//		Alec Schneider (2017)
+//		Raoul Baron (2017)
 //		Stefan Neubert (2015)
 //		Stephan Richter (2011)
-//		Patrick Lühne (2012)
+//		Patrick Loehne (2012)
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +55,7 @@ void Application::warpImage()
 }
 
 void Application::processFrame()
-{	
+{
 	///////////////////////////////////////////////////////////////////////////
 	//
 	// To do:
@@ -160,7 +163,7 @@ void Application::loop()
 			m_gameClient->game()->highlightUnit(0, false);
 		break;
 	}
-	
+
 	if(m_isFinished) return;
 
 	if(m_gameClient && m_gameClient->game())
