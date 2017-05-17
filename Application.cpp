@@ -116,6 +116,8 @@ cv::Point2f Application::detectTouch() {
 	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, cv::THRESH_TOZERO_INV);
 	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, cv::THRESH_TOZERO);
 
+	cv::imshow("tresholding result", thresholdedDepth);
+
 	// find outlines
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
@@ -181,7 +183,6 @@ cv::Point2f Application::detectTouch() {
 	// * big enough
 	// * valid center point was found (not -1 in coords)
 	m_isTouching =
-		maxEllipseSize > OVER_SIX_THOUSAND &&
 	  maxEllipseCenter.x >= 0.0 &&
 		maxEllipseCenter.y >= 0.0;
 
