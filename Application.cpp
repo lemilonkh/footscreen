@@ -46,9 +46,6 @@ const int OVER_SIX_THOUSAND = 6001; //MIN_ELLIPSE_SIZE
 const int MIN_CONTOUR_SIZE = 100;
 const int MAX_CONTOUR_SIZE = 200;
 const double LEG_THRESHOLD = 52; // TODO figure out automatically
-const int FRAME_SAMPLING_INTERVAL = 8; // every N frames
-const int CLASSIFICATION_POINT_COUNT = 8;
-const int K_NEIGHBORHOOD_SIZE = 5; // classification used neighbor count (majority vote)
 
 void Application::warpImage()
 {
@@ -116,14 +113,14 @@ cv::Point2f Application::detectTouch() {
 	diff *= 10;
 
 	// thresholding pass (remove leg etc.)
-	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, THRESH_TOZERO_INV);
-	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, THRESH_TOZERO);
+	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, cv::THRESH_TOZERO_INV);
+	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, cv::THRESH_TOZERO);
 
 	// find outlines
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
-	cv::findContours(thresholdedDepth, contours, hierarchy, cv::CV_RETR_TREE,
-		cv::CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+	cv::findContours(thresholdedDepth, contours, hierarchy, CV_RETR_TREE,
+		CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 	// add real color image to output
 	m_outputImage = m_bgrImage; //thresholdedDepth
@@ -176,7 +173,7 @@ cv::Point2f Application::detectTouch() {
 		cv::ellipse(thresholdedDepth, currentEllipse, drawColor, 2, 8);
 
 		// draw contours and ellipses
-		cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, vector<Vec4i>(), 0, Point());
+		cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
 		cv::ellipse(m_outputImage, minEllipses[i], drawColor, 2, 8);
 	}
 
@@ -185,10 +182,9 @@ cv::Point2f Application::detectTouch() {
 	// * valid center point was found (not -1 in coords)
 	if(maxEllipseSize > OVER_SIX_THOUSAND &&
 	  maxEllipseCenter.x >= 0.0 && maxEllipseCenter.y >= 0.0) {
-		m_frameCounter = 0;
-	  m_footPathPoints.push_back(maxEllipseCenter);
-		Point2f lastPoint = m_footPathPoints.back();
-		cout << "Using touch point " << maxEllipseCenter << "!" << endl;
+		std::cout << "Using correct touch point " << maxEllipseCenter << "!" << std::endl;
+	} else {
+		std::cout << "Using incorrect touch point " << maxEllipseCenter << "!" << std::endl;
 	}
 
 	return maxEllipseCenter;
@@ -196,7 +192,7 @@ cv::Point2f Application::detectTouch() {
 
 void Application::calibrateTouch() {
 	m_depthImage *= IMAGE_AMPLIFICATION;
-	m_depthImage.convertTo(m_calibrationImage, cv::CV_8UC1, 1.0/256.0, 0);
+	m_depthImage.convertTo(m_calibrationImage, CV_8UC1, 1.0/256.0, 0);
 
 	m_isTouchCalibrated = true;
 
