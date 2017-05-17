@@ -95,11 +95,11 @@ void Application::processFrame()
 			minDistance = currentDistance;
 			minDistanceIndex = i;
 		}
+		m_gameClient->game()->highlightUnit(i, false);
 	}
 	auto unit = m_gameClient->game()->unitByIndex(minDistanceIndex);
-	m_gameClient->game()->moveUnit(minDistanceIndex, (float)atan2((touch.y-unit->y()), (touch.x-unit->x())), 0.1f);
-
-
+	m_gameClient->game()->moveUnit(minDistanceIndex, (float)atan2((touch.y-unit->y()), (touch.x-unit->x()))-M_PI, 0.1f);
+	m_gameClient->game()->highlightUnit(minDistanceIndex, true);
 }
 
 cv::Point2f Application::detectTouch() {
