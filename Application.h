@@ -54,6 +54,7 @@ protected:
 
 	bool m_isFinished;
 	bool m_isTouchCalibrated;
+	bool m_isTouching;
 
 	double m_groundValue;
 

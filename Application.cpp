@@ -180,11 +180,13 @@ cv::Point2f Application::detectTouch() {
 	// only write to path log if:
 	// * big enough
 	// * valid center point was found (not -1 in coords)
-	if(maxEllipseSize > OVER_SIX_THOUSAND &&
-	  maxEllipseCenter.x >= 0.0 && maxEllipseCenter.y >= 0.0) {
-		std::cout << "Using correct touch point " << maxEllipseCenter << "!" << std::endl;
-	} else {
-		std::cout << "Using incorrect touch point " << maxEllipseCenter << "!" << std::endl;
+	m_isTouching =
+		maxEllipseSize > OVER_SIX_THOUSAND &&
+	  maxEllipseCenter.x >= 0.0 &&
+		maxEllipseCenter.y >= 0.0;
+
+	if(m_isTouching) {
+		std::cout << "Using touch point " << maxEllipseCenter << "!" << std::endl;
 	}
 
 	return maxEllipseCenter;
@@ -336,6 +338,7 @@ void Application::makeScreenshots()
 
 Application::Application()
 	: m_isFinished(false)
+	: m_isTouching(false)
 	, m_depthCamera(nullptr)
 	, m_kinectMotor(nullptr)
 	, m_skeletonTracker(nullptr)
