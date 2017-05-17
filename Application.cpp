@@ -36,6 +36,17 @@
 const int Application::uist_level = 1;
 const char* Application::uist_server = "127.0.0.1";
 
+// constants
+const int IMAGE_AMPLIFICATION = 20; // multiplied into the depth texture
+const int IMAGE_HEIGHT = 480;
+const int IMAGE_WIDTH = 640;
+const int CROSSHAIR_SIZE = 50;
+const int MIN_CONTOUR_POINTS = 10;
+const int OVER_SIX_THOUSAND = 6001; //MIN_ELLIPSE_SIZE
+const int MIN_CONTOUR_SIZE = 100;
+const int MAX_CONTOUR_SIZE = 200;
+const double LEG_THRESHOLD = 52; // TODO figure out automatically
+
 void Application::warpImage()
 {
 	///////////////////////////////////////////////////////////////////////////
@@ -77,6 +88,117 @@ void Application::processFrame()
 
 	flipHorizontally();
 	warpImage();
+	cv::Point2f touch = detectTouch();
+}
+
+cv::Point2f Application::detectTouch() {
+	if(!m_isTouchCalibrated)
+		calibrateTouch();
+
+	cv::Mat withoutGround, thresholdedDepth, src, diff;
+	double maxValue = 255;
+
+	// Amplify and convert image from 16bit to 8bit
+	m_depthImage *= IMAGE_AMPLIFICATION;
+	m_depthImage.convertTo(src, CV_8UC1, 1.0/256.0, 0);
+
+	// removes calibration image from depth image
+	// so only parts that moved since then are still visible
+	cv::absdiff(src, m_calibrationImage, diff);
+
+	// blur to remove artifacts
+	cv::medianBlur(diff, diff, 25);
+
+	// amplify to generate a higher contrast image
+	diff *= 10;
+
+	// thresholding pass (remove leg etc.)
+	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, cv::THRESH_TOZERO_INV);
+	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, cv::THRESH_TOZERO);
+
+	// find outlines
+	std::vector<std::vector<cv::Point>> contours;
+	std::vector<cv::Vec4i> hierarchy;
+	cv::findContours(thresholdedDepth, contours, hierarchy, CV_RETR_TREE,
+		CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+	// add real color image to output
+	m_outputImage = m_bgrImage; //thresholdedDepth
+
+	// fit ellipses & determine center points
+	std::vector<cv::RotatedRect> minEllipses(contours.size());
+	std::vector<cv::Point2f> centerPoints(contours.size());
+	cv::RotatedRect currentEllipse;
+	cv::Point2f currentCenter;
+	float currentSize;
+	cv::Scalar drawColor;
+
+	// TODO remove debug output
+	//cout << "Found " << contours.size() << " contours!" << endl;
+
+	// is there any foot found in this frame?
+	bool anyEllipseValid = false;
+	double maxEllipseSize = 0.0;
+	cv::Point2f maxEllipseCenter(-1.0, -1.0);
+
+	for(auto i = 0u; i < contours.size(); i++) {
+		// don't use too small shapes (point count)
+		if(contours[i].size() < MIN_CONTOUR_POINTS)
+			continue;
+
+		currentEllipse = cv::fitEllipse(cv::Mat(contours[i]));
+		currentCenter = currentEllipse.center;
+		currentSize = currentEllipse.size.width * currentEllipse.size.height;
+
+		// filter out too small ellipses
+		// find ellipse with the maximum size
+		anyEllipseValid = true;
+
+		// sample every N frames
+		if(currentSize > maxEllipseSize) {
+			maxEllipseCenter = currentCenter;
+			maxEllipseSize = currentSize;
+			drawColor = cv::Scalar(0, 255, 255);
+		}
+
+		minEllipses[i] = currentEllipse;
+
+		centerPoints.push_back(currentCenter);
+
+		// TODO remove debug output
+		//std::cout << "Center: " << currentCenter.x << "," << currentCenter.y << std::endl;
+
+		drawColor = cv::Scalar(255, 255, 255);
+
+		cv::ellipse(thresholdedDepth, currentEllipse, drawColor, 2, 8);
+
+		// draw contours and ellipses
+		cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+		cv::ellipse(m_outputImage, minEllipses[i], drawColor, 2, 8);
+	}
+
+	// only write to path log if:
+	// * big enough
+	// * valid center point was found (not -1 in coords)
+	if(maxEllipseSize > OVER_SIX_THOUSAND &&
+	  maxEllipseCenter.x >= 0.0 && maxEllipseCenter.y >= 0.0) {
+		std::cout << "Using correct touch point " << maxEllipseCenter << "!" << std::endl;
+	} else {
+		std::cout << "Using incorrect touch point " << maxEllipseCenter << "!" << std::endl;
+	}
+
+	return maxEllipseCenter;
+}
+
+void Application::calibrateTouch() {
+	m_depthImage *= IMAGE_AMPLIFICATION;
+	m_depthImage.convertTo(m_calibrationImage, CV_8UC1, 1.0/256.0, 0);
+
+	m_isTouchCalibrated = true;
+
+	double min, max;
+	cv::minMaxLoc(m_calibrationImage, &min, &max);
+	m_groundValue = max;
 }
 
 void Application::flipHorizontally() {
@@ -172,6 +294,10 @@ void Application::loop()
 		if(m_gameClient && m_gameClient->game())
 			m_gameClient->game()->highlightUnit(0, false);
 		break;
+	case 'c':
+		std::cout << "Calibrating touch recognition..." << std::endl;
+		calibrateTouch();
+		std::cout << "Found ground value: " << m_groundValue << std::endl;
 	}
 
 	if(m_isFinished) return;
@@ -195,6 +321,7 @@ void Application::loop()
 	cv::imshow("bgr", m_bgrImage);
 	cv::imshow("depth", m_depthImage);
 	cv::imshow("output", m_outputImage);
+	cv::imshow("calibration", m_calibrationImage);
 	cv::imshow("UIST game", m_gameImage);
 }
 
@@ -227,7 +354,7 @@ Application::Application()
 	cv::namedWindow("bgr", CV_WINDOW_AUTOSIZE);
 	cv::namedWindow("UIST game", CV_WINDOW_AUTOSIZE);
 
-	// create work buffer
+	// create work buffers
 	m_bgrImage = cv::Mat(480, 640, CV_8UC3);
 	m_depthImage = cv::Mat(480, 640, CV_16UC1);
 	m_outputImage = cv::Mat(480, 640, CV_8UC1);
@@ -235,6 +362,7 @@ Application::Application()
 	m_bgrFlipImage = cv::Mat(480, 640, CV_8UC3);
 	m_depthFlipImage = cv::Mat(480, 640, CV_16UC1);
 	m_gameFlipImage = cv::Mat(480, 640, CV_8UC3);
+	m_calibrationImage = cv::Mat(480, 640, CV_8UC1);
 
 	if(uist_server == "127.0.0.1") {
 		m_gameServer = new GameServer;
