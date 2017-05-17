@@ -51,7 +51,7 @@ void Application::warpImage()
 	//                  you have computed
 	//
 	///////////////////////////////////////////////////////////////////////////
-	warpPerspective(m_outputImage, m_outputImage, m_calibration->cameraToPhysical(), m_outputImage.size());
+	warpPerspective(m_gameImage, m_outputImage, m_calibration->projectorToPhysical(), m_outputImage.size());
 }
 
 void Application::processFrame()
@@ -74,6 +74,18 @@ void Application::processFrame()
 
 	// Sample code brightening up the depth image to make the values visible
 	m_depthImage *= 10;
+
+	flipHorizontally();
+	warpImage();
+}
+
+void Application::flipHorizontally() {
+	cv::flip(m_bgrImage, m_bgrFlipImage, 1);
+	m_bgrImage = m_bgrFlipImage;
+	cv::flip(m_depthImage, m_depthFlipImage, 1);
+	m_depthImage = m_depthFlipImage;
+	cv::flip(m_gameImage, m_gameFlipImage, 1);
+	m_gameImage = m_gameFlipImage;
 }
 
 void Application::processSkeleton(XnUserID userId)
@@ -222,6 +234,8 @@ Application::Application()
 	m_depthImage = cv::Mat(480, 640, CV_16UC1);
 	m_outputImage = cv::Mat(480, 640, CV_8UC1);
 	m_gameImage = cv::Mat(480, 480, CV_8UC3);
+	m_bgrFlipImage = cv::Mat(480, 640, CV_8UC3);
+	m_depthFlipImage = cv::Mat(480, 640, CV_16UC1);
 
 	if(uist_server == "127.0.0.1") {
 		m_gameServer = new GameServer;

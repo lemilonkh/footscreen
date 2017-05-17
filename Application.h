@@ -44,6 +44,9 @@ protected:
 	cv::Mat m_depthImage;
 	cv::Mat m_outputImage;
 	cv::Mat m_gameImage;
+	cv::Mat m_bgrFlipImage;
+	cv::Mat m_depthFlipImage;
+	cv::Mat m_gameFlipImage;
 
 	bool m_isFinished;
 
