@@ -87,8 +87,9 @@ void Application::processFrame()
 	warpImage();
 	std::vector<cv::Point2f> touchVector, transformedTouchVector;
 	touches.push_back(detectTouch());
-	cv::Point2f touch = cv::perspectiveTransform(touchVector, transformedTouchVector,
+	cv::perspectiveTransform(touchVector, transformedTouchVector,
 		m_calibration->cameraToPhysical());
+	cv::Point2f touch = transformedTouchVector[0];
 
 	int minDistanceIndex = -1;
 	float minDistance = 0;
