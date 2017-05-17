@@ -5,6 +5,11 @@
 
 #include <iostream>
 
+cv::Mat m_projectorToPhysical;
+cv::Mat m_physicalToProjector;
+cv::Mat m_physicalToCamera;
+cv::Mat cameraToPhysical;
+
 void Calibration::computeHomography()
 {
 	///////////////////////////////////////////////////////////////////////////
@@ -35,14 +40,15 @@ void Calibration::computeHomography()
 	cv::Point2f topRight(480, 0);
 	cv::Point2f bottomLeft(0, 480);
 	cv::Point2f bottomRight(480, 480);
-	std::vector<cv::Point2f> targetPoints {
-		bottomRight, bottomLeft,
-		topLeft, topRight
-	};
+	std::vector<cv::Point2f> targetPoints;
+	targetPoints.push_back(bottomLeft);
+	targetPoints.push_back(bottomRight);
+	targetPoints.push_back(topRight);
+	targetPoints.push_back(topLeft);
 
 	// calculate homography matrix and its inverse
 	m_projectorToPhysical = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
-	m_physicalToProjector = cv::getPerspectiveTransform(targetPoints, m_projectorToPhysical);
+	m_physicalToProjector = cv::getPerspectiveTransform(targetPoints, m_projectorCoordinates);
 
 	/// CALIBRATE CAMERA ///
 	// calculate homography matrix and its inverse
@@ -161,6 +167,7 @@ void Calibration::calibrateCamera(const cv::Mat &bgrImage)
 
 	// Show the BGR image in order to click on it
 	bgrImage.copyTo(destinationRegionOfInterest);
+
 
 	std::stringstream info;
 	info << "Click on the " << m_circleNames[m_numberOfCameraCoordinates]

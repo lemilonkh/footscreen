@@ -62,7 +62,7 @@ void Application::warpImage()
 	//                  you have computed
 	//
 	///////////////////////////////////////////////////////////////////////////
-	warpPerspective(m_gameImage, m_outputImage, m_calibration->projectorToPhysical(), m_outputImage.size());
+	warpPerspective(m_gameImage, m_outputImage, m_calibration->physicalToProjector(), m_outputImage.size(), cv::INTER_LINEAR);
 }
 
 void Application::processFrame()
@@ -208,8 +208,6 @@ void Application::flipHorizontally() {
 	m_bgrImage = m_bgrFlipImage;
 	cv::flip(m_depthImage, m_depthFlipImage, 1);
 	m_depthImage = m_depthFlipImage;
-	cv::flip(m_gameImage, m_gameFlipImage, 1);
-	m_gameImage = m_gameFlipImage;
 }
 
 void Application::processSkeleton(XnUserID userId)
@@ -366,6 +364,7 @@ Application::Application()
 	m_gameImage = cv::Mat(480, 480, CV_8UC3);
 	m_bgrFlipImage = cv::Mat(480, 640, CV_8UC3);
 	m_depthFlipImage = cv::Mat(480, 640, CV_16UC1);
+	m_gameFlipImage = cv::Mat(480, 640, CV_8UC3);
 	m_calibrationImage = cv::Mat(480, 640, CV_8UC1);
 
 	if(uist_server == "127.0.0.1") {
