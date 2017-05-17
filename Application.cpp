@@ -89,6 +89,16 @@ void Application::processFrame()
 	flipHorizontally();
 	warpImage();
 	cv::Point2f touch = detectTouch();
+	int minDistanceIndex = -1;
+	float minDistance = 0;
+	for (int i = 0; i < 5; i++) {
+		auto unit = m_gameClient->game()->unitByIndex(i);
+		float currentDistance = sqrt(pow((touch.x-unit->x()), 2) + pow((touch.y-unit->y()), 2));
+		if (minDistanceIndex == -1 || minDistance > currentDistance) {
+			minDistance = currentDistance;
+			minDistanceIndex = i;
+		}
+	}
 }
 
 cv::Point2f Application::detectTouch() {
@@ -134,7 +144,7 @@ cv::Point2f Application::detectTouch() {
 	cv::Scalar drawColor;
 
 	// TODO remove debug output
-	//cout << "Found " << contours.size() << " contours!" << endl;
+	std::cout << "Found " << contours.size() << " contours!" << std::endl;
 
 	// is there any foot found in this frame?
 	bool anyEllipseValid = false;
