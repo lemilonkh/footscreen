@@ -42,7 +42,7 @@ void Calibration::computeHomography()
 
 	// calculate homography matrix and its inverse
 	m_projectorToPhysical = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
-	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
+	m_physicalToProjector = cv::getPerspectiveTransform(targetPoints, m_projectorToPhysical);
 
 	/// CALIBRATE CAMERA ///
 	// calculate homography matrix and its inverse
