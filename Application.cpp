@@ -37,7 +37,7 @@ const int Application::uist_level = 1;
 const char* Application::uist_server = "127.0.0.1";
 
 // constants
-const int IMAGE_AMPLIFICATION = 20; // multiplied into the depth texture
+const int IMAGE_AMPLIFICATION = 10; // multiplied into the depth texture
 const int IMAGE_HEIGHT = 480;
 const int IMAGE_WIDTH = 640;
 const int CROSSHAIR_SIZE = 50;
@@ -45,7 +45,7 @@ const int MIN_CONTOUR_POINTS = 10;
 const int OVER_SIX_THOUSAND = 6001; //MIN_ELLIPSE_SIZE
 const int MIN_CONTOUR_SIZE = 100;
 const int MAX_CONTOUR_SIZE = 200;
-const double LEG_THRESHOLD = 52; // TODO figure out automatically
+const double LEG_THRESHOLD = 35; // TODO figure out automatically
 
 void Application::warpImage()
 {
@@ -99,6 +99,10 @@ void Application::processFrame()
 			minDistanceIndex = i;
 		}
 	}
+	auto unit = m_gameClient->game()->unitByIndex(minDistanceIndex);
+	m_gameClient->game()->moveUnit(minDistanceIndex, (float)atan2((touch.y-unit->y()), (touch.x-unit->x())), 0.1f);
+
+
 }
 
 cv::Point2f Application::detectTouch() {
@@ -126,7 +130,7 @@ cv::Point2f Application::detectTouch() {
 	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, cv::THRESH_TOZERO_INV);
 	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, cv::THRESH_TOZERO);
 
-	cv::imshow("tresholding result", thresholdedDepth);
+	cv::imshow("tresholding result", withoutGround);
 
 	// find outlines
 	std::vector<std::vector<cv::Point>> contours;
