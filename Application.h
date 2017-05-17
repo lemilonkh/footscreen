@@ -27,6 +27,8 @@ public:
 
 	void makeScreenshots();
 	void clearOutputImage();
+	void flipHorizontally();
+	cv::Point2f detectTouch();
 
 	bool isFinished();
 
@@ -44,8 +46,15 @@ protected:
 	cv::Mat m_depthImage;
 	cv::Mat m_outputImage;
 	cv::Mat m_gameImage;
+	cv::Mat m_bgrFlipImage;
+	cv::Mat m_depthFlipImage;
+	cv::Mat m_gameFlipImage;
+	cv::Mat m_calibrationImage;
 
 	bool m_isFinished;
+	bool m_isTouchCalibrated;
+
+	double m_groundValue;
 
 	static const int uist_level;
 	static const char *uist_server;
