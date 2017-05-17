@@ -27,6 +27,7 @@ public:
 
 	void makeScreenshots();
 	void clearOutputImage();
+	void flipHorizontally();
 
 	bool isFinished();
 
