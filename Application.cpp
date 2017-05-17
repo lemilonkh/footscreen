@@ -86,10 +86,13 @@ void Application::processFrame()
 	flipHorizontally();
 	warpImage();
 	std::vector<cv::Point2f> touchVector, transformedTouchVector;
-	touches.push_back(detectTouch());
+	touchVector.push_back(detectTouch());
 	cv::perspectiveTransform(touchVector, transformedTouchVector,
 		m_calibration->cameraToPhysical());
 	cv::Point2f touch = transformedTouchVector[0];
+
+	// draw circle at touch position
+	cv::circle(m_outputImage, touch, 10, cv::Scalar(0, 255, 255), 3);
 
 	int minDistanceIndex = -1;
 	float minDistance = 0;
@@ -103,7 +106,7 @@ void Application::processFrame()
 		m_gameClient->game()->highlightUnit(i, false);
 	}
 	auto unit = m_gameClient->game()->unitByIndex(minDistanceIndex);
-	m_gameClient->game()->moveUnit(minDistanceIndex, (float)atan2((touch.y-unit->y()), (touch.x-unit->x()))-M_PI, 0.1f);
+	m_gameClient->game()->moveUnit(minDistanceIndex, (float)atan2((unit->y() - touch.y), (unit->x() - touch.x)), 0.1f);
 	m_gameClient->game()->highlightUnit(minDistanceIndex, true);
 }
 
@@ -132,7 +135,7 @@ cv::Point2f Application::detectTouch() {
 	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, cv::THRESH_TOZERO_INV);
 	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, cv::THRESH_TOZERO);
 
-	cv::imshow("tresholding result", withoutGround);
+	//cv::imshow("tresholding result", withoutGround);
 
 	// find outlines
 	std::vector<std::vector<cv::Point>> contours;
@@ -141,7 +144,7 @@ cv::Point2f Application::detectTouch() {
 		CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 	// add real color image to output
-	m_outputImage = m_bgrImage; //thresholdedDepth
+	// m_outputImage = m_bgrImage; //thresholdedDepth
 
 	// fit ellipses & determine center points
 	std::vector<cv::RotatedRect> minEllipses(contours.size());
@@ -188,16 +191,12 @@ cv::Point2f Application::detectTouch() {
 		cv::ellipse(thresholdedDepth, currentEllipse, drawColor, 2, 8);
 
 		// draw contours and ellipses
-		cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
-		cv::ellipse(m_outputImage, minEllipses[i], drawColor, 2, 8);
+		//cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+		//cv::ellipse(m_outputImage, minEllipses[i], drawColor, 2, 8);
 	}
 
-	// only write to path log if:
-	// * big enough
-	// * valid center point was found (not -1 in coords)
-	m_isTouching =
-	  maxEllipseCenter.x >= 0.0 &&
-		maxEllipseCenter.y >= 0.0;
+	// only write to path log if valid center point was found (not -1 in coords)
+	m_isTouching = maxEllipseCenter.x >= 0.0 && maxEllipseCenter.y >= 0.0;
 
 	return maxEllipseCenter;
 }
@@ -332,11 +331,11 @@ void Application::loop()
 			processSkeleton(*i);
 	}
 
-	cv::imshow("bgr", m_bgrImage);
-	cv::imshow("depth", m_depthImage);
+	//cv::imshow("bgr", m_bgrImage);
+	//cv::imshow("depth", m_depthImage);
 	cv::imshow("output", m_outputImage);
 	cv::imshow("calibration", m_calibrationImage);
-	cv::imshow("UIST game", m_gameImage);
+	//cv::imshow("UIST game", m_gameImage);
 }
 
 void Application::makeScreenshots()
