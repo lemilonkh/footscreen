@@ -85,7 +85,11 @@ void Application::processFrame()
 
 	flipHorizontally();
 	warpImage();
-	cv::Point2f touch = detectTouch();
+	std::vector<cv::Point2f> touchVector, transformedTouchVector;
+	touches.push_back(detectTouch());
+	cv::Point2f touch = cv::perspectiveTransform(touchVector, transformedTouchVector,
+		m_calibration->cameraToPhysical());
+
 	int minDistanceIndex = -1;
 	float minDistance = 0;
 	for (int i = 0; i < 5; i++) {
@@ -142,9 +146,6 @@ cv::Point2f Application::detectTouch() {
 	float currentSize;
 	cv::Scalar drawColor;
 
-	// TODO remove debug output
-	std::cout << "Found " << contours.size() << " contours!" << std::endl;
-
 	// is there any foot found in this frame?
 	bool anyEllipseValid = false;
 	double maxEllipseSize = 0.0;
@@ -182,8 +183,8 @@ cv::Point2f Application::detectTouch() {
 		cv::ellipse(thresholdedDepth, currentEllipse, drawColor, 2, 8);
 
 		// draw contours and ellipses
-		cv::drawContours(m_gameImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
-		cv::ellipse(m_gameImage, minEllipses[i], drawColor, 2, 8);
+		cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+		cv::ellipse(m_outputImage, minEllipses[i], drawColor, 2, 8);
 	}
 
 	// only write to path log if:
@@ -192,10 +193,6 @@ cv::Point2f Application::detectTouch() {
 	m_isTouching =
 	  maxEllipseCenter.x >= 0.0 &&
 		maxEllipseCenter.y >= 0.0;
-
-	if(m_isTouching) {
-		std::cout << "Using touch point " << maxEllipseCenter << "!" << std::endl;
-	}
 
 	return maxEllipseCenter;
 }
