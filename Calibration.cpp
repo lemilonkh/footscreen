@@ -31,42 +31,26 @@ void Calibration::computeHomography()
 	/// CALIBRATE PROJECTOR ///
 
 	// create target rect points (fullscreen)
-	cv::Point2f topLeft(200, 200);
-	cv::Point2f bottomRight(400, 400); // TODO make bigger
-	std::vector<cv::Point2f> targetPoints = makeRect(topLeft, bottomRight);
+	cv::Point2f topLeft(0, 0);
+	cv::Point2f topRight(480, 0);
+	cv::Point2f bottomLeft(0, 480);
+	cv::Point2f bottomRight(480, 480);
+	std::vector<cv::Point2f> targetPoints {
+		bottomRight, bottomLeft,
+		topLeft, topRight
+	};
 
 	// calculate homography matrix and its inverse
+	m_projectorToPhysical = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
 	m_physicalToProjector = cv::getPerspectiveTransform(m_projectorCoordinates, targetPoints);
-	cv::invert(m_physicalToProjector, m_projectorToPhysical);
 
 	/// CALIBRATE CAMERA ///
-
-	// create kinect target rect points (VGA resolution in BGR camera)
-	/*int kinectWidth = 640, kinectHeight = 480;
-	topLeft = cv::Point2f(0, 0);
-	bottomRight = cv::Point2f(kinectWidth, kinectHeight);
-	std::vector<cv::Point2f> kinectTargetPoints = makeRect(topLeft, bottomRight);*/
-
 	// calculate homography matrix and its inverse
-	// TODO use kinectTargetPoints ???
-	m_physicalToCamera = cv::getPerspectiveTransform(m_cameraCoordinates, targetPoints);
-	cv::invert(m_physicalToCamera, m_cameraToPhysical);
+	m_physicalToCamera = cv::getPerspectiveTransform(targetPoints, m_cameraCoordinates);
+	m_cameraToPhysical = cv::getPerspectiveTransform(m_cameraCoordinates, targetPoints);
 
 	// some nice logging
 	logMatrices();
-}
-
-std::vector<cv::Point2f> Calibration::makeRect(cv::Point2f topLeft, cv::Point2f bottomRight) {
-	std::vector<cv::Point2f> points(4);
-	points.push_back(cv::Point2f(topLeft.x, bottomRight.y));
-	points.push_back(bottomRight);
-	points.push_back(cv::Point2f(bottomRight.x, topLeft.y));
-	points.push_back(topLeft);
-
-	// TODO remove logging
-	std::cout << "Make rect: points = " << points << std::endl;
-
-	return points;
 }
 
 void Calibration::logMatrices() {
@@ -75,7 +59,7 @@ void Calibration::logMatrices() {
 						<< " | Projector to physical: | " << m_projectorToPhysical << std::endl
 						<< " | Physical to camera:    | " << m_physicalToCamera 	 << std::endl
 						<< " | Camera to physical:    | " << m_cameraToPhysical		 << std::endl
-	          << " +------------------------+ " << std::endl;
+	          << " +------------------------+ " << std::endl << std::endl;
 }
 
 void mouseCallback(int event, int x, int y, int flags, void *pointer);
