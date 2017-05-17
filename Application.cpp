@@ -126,6 +126,8 @@ cv::Point2f Application::detectTouch() {
 	cv::threshold(diff, withoutGround, LEG_THRESHOLD, maxValue, cv::THRESH_TOZERO_INV);
 	cv::threshold(withoutGround, thresholdedDepth, 20, maxValue, cv::THRESH_TOZERO);
 
+	cv::imshow("tresholding result", thresholdedDepth);
+
 	// find outlines
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
