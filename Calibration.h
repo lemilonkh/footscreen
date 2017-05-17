@@ -38,6 +38,7 @@ protected:
 	bool m_hasTerminated;
 
 	cv::Mat m_calibrationImage;
+	cv::Mat bgrFlipImage;
 
 	std::vector<std::string> m_circleNames;
 
