@@ -82,9 +82,6 @@ void Application::processFrame()
 	//                  undistorted on the floor.
 	//
 	///////////////////////////////////////////////////////////////////////////
-	
-	// Sample code brightening up the depth image to make the values visible
-	m_depthImage *= 10;
 
 	flipHorizontally();
 	warpImage();
@@ -208,6 +205,8 @@ cv::Point2f Application::detectTouch() {
 }
 
 void Application::calibrateTouch() {
+	m_depthCamera->getFrame(m_bgrImage, m_depthImage);
+	flipHorizontally();
 	m_depthImage *= IMAGE_AMPLIFICATION;
 	m_depthImage.convertTo(m_calibrationImage, CV_8UC1, 1.0/256.0, 0);
 
