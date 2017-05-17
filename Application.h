@@ -28,6 +28,7 @@ public:
 	void makeScreenshots();
 	void clearOutputImage();
 	void flipHorizontally();
+	void calibrateTouch();
 	cv::Point2f detectTouch();
 
 	bool isFinished();
