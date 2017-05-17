@@ -51,7 +51,7 @@ void Application::warpImage()
 	//                  you have computed
 	//
 	///////////////////////////////////////////////////////////////////////////
-	warpPerspective(m_outputImage, m_outputImage, m_calibration->cameraToPhysical(), cv::Size( 640, 480 ));
+	warpPerspective(m_outputImage, m_outputImage, m_calibration->cameraToPhysical(), m_outputImage.size());
 }
 
 void Application::processFrame()
