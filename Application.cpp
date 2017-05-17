@@ -82,7 +82,7 @@ void Application::processFrame()
 	//                  undistorted on the floor.
 	//
 	///////////////////////////////////////////////////////////////////////////
-
+	
 	// Sample code brightening up the depth image to make the values visible
 	m_depthImage *= 10;
 
@@ -173,15 +173,14 @@ cv::Point2f Application::detectTouch() {
 		cv::ellipse(thresholdedDepth, currentEllipse, drawColor, 2, 8);
 
 		// draw contours and ellipses
-		cv::drawContours(m_outputImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
-		cv::ellipse(m_outputImage, minEllipses[i], drawColor, 2, 8);
+		cv::drawContours(m_gameImage, contours, i, drawColor, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+		cv::ellipse(m_gameImage, minEllipses[i], drawColor, 2, 8);
 	}
 
 	// only write to path log if:
 	// * big enough
 	// * valid center point was found (not -1 in coords)
 	m_isTouching =
-		maxEllipseSize > OVER_SIX_THOUSAND &&
 	  maxEllipseCenter.x >= 0.0 &&
 		maxEllipseCenter.y >= 0.0;
 
@@ -336,7 +335,7 @@ void Application::makeScreenshots()
 
 Application::Application()
 	: m_isFinished(false)
-	: m_isTouching(false)
+	, m_isTouching(false)
 	, m_depthCamera(nullptr)
 	, m_kinectMotor(nullptr)
 	, m_skeletonTracker(nullptr)
